@@ -24,12 +24,11 @@ steps:
         
         getWorkItemQuery="{\"query\": \"Select [System.Title] From WorkItems Where [State] <> 'Closed' AND [State] <> 'Removed' AND [System.Tags] contains '${{ parameters.tag_value_to_filter_issues }}'\"}"
         workItemQueryResult=$(curl --silent -X POST -H 'Content-Type: application/json' -u "$Authentication" -d "$getWorkItemQuery" $getWorkItemsApiUrl)
-        existingWorkItems=$( jq -c  '.workItems[]' <<< "${workItemQueryResult}" )
-        echo $workItemQueryResult
 
-        for workItem in existingWorkItems; do    
-          echo $workItem
-          workItemUrl=$( jq -c  '.url' <<< "${workItem}" )
+        for workItem in $(echo "${workItemQueryResult}" | jq -r '.workItems[] | @base64'); do
+          workItemJson=$(echo "$workItem" | base64 --decode)
+          echo $workItemJson
+          workItemUrl=$( jq -r  '.url' <<< "${workItemJson}" )
           Body='[
           {
             "op": "add",
