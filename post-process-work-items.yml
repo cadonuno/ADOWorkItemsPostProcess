@@ -48,9 +48,7 @@ steps:
               "descriptor":"${{ parameters.user_to_assign }}"
             }
           }]'
-
-          echo $Body
-          queryResults=workItemQueryResult=$(curl --silent -X PATCH -H 'Content-Type: application/json-patch+json' -u "$Authentication" -d "$Body" $workItemUrl?api-version=5.0)
+          queryResults=$(curl --silent -X PATCH -H 'Content-Type: application/json-patch+json' -u "$Authentication" -d "$Body" $workItemUrl?api-version=5.0)
 
           echo Ticket updated: $workItemUrl
           echo $queryResults
