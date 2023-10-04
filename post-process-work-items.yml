@@ -8,8 +8,7 @@ parameters:
   
 steps:
 - task: CmdLine@2
-  continueOnError: true
-  name: CreateTickets
+  name: UpdateTickets
   env:
     API_CREDENTIALS: $(AZURE_API_CREDENTIALS)
   inputs:
