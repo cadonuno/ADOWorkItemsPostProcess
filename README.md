@@ -3,10 +3,11 @@
 Adds additional capabilities to the Veracode Flaw Importer, allowing for the linkage of issues (to an epic for instance), and default user assignment.
 
 # Usage:
-After running a regular flaw importer, 
-    # requires AZURE_API_CREDENTIALS environment variable (secret)
-    - template: post-process-work-items.yml
-      parameters:
+After running a regular flaw importer, call this:  
+
+      # requires AZURE_API_CREDENTIALS environment variable (secret)  
+      - template: post-process-work-items.yml 
+        parameters:
           organization: '{{ORGANIZATION_NAME}}'
           project_name: '{{PROJECT_NAME}}'
           azure_base_directory: '{{azure_base_url}}'
