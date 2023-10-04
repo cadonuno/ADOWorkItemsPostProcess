@@ -1,0 +1,21 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- main
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+  # requires AZURE_API_CREDENTIALS environment variable (secret)
+  - template: post-process-work-items.yml
+    parameters:
+        organization: 'rpereira0294'
+        project_name: '$(system.teamProject)'
+        azure_base_directory: 'https://dev.azure.com'
+        work_item_id_to_link: '2206'
+        user_to_assign: '522f70d6-e9f7-63b0-a1e9-9f5726a5089f'
+        tag_value_to_filter_issues: 'Build_20383219'
