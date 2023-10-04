@@ -1,6 +1,11 @@
 # ADO Work Items Post Process:
 
 Adds additional capabilities to the Veracode Flaw Importer, allowing for the linkage of issues (to an epic for instance), and default user assignment.
+# Prerequisite:
+- Veracode Flaw Importer task setup on an ADO pipeline
+- AZURE_API_CREDENTIALS environment variable set with an ADO Personal Access Token
+  - You can find guidance on how to generate this token here: https://learn.microsoft.com/en-us/azure/devops/organizations/accounts/use-personal-access-tokens-to-authenticate?view=azure-devops&tabs=Windows
+  - For security reasons, it is recommended that you set this variable as a secret
 
 # Usage:
 After running a regular flaw importer, call this:  
