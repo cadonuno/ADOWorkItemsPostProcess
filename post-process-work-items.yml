@@ -27,7 +27,8 @@ steps:
         existingWorkItems=$( jq -c  '.workItems' <<< "${workItemQueryResult}" )
         echo $workItemQueryResult
 
-        for workItem in $(echo "${existingWorkItems}" | jq -r '. | @base64'); do        
+        for workItem in $(echo "${existingWorkItems}" | jq); do      
+          workItemUrl=$( jq -c  '.workItems' <<< "${url}" )
           Body='[
           {
             "op": "add",
@@ -49,9 +50,10 @@ steps:
           }]'
 
           echo $Body
-          curl --silent -X PATCH -H 'Content-Type: application/json-patch+json' -u "$Authentication" -d "$Body" $workItemUrl?api-version=5.0
+          queryResults=workItemQueryResult=$(curl --silent -X PATCH -H 'Content-Type: application/json-patch+json' -u "$Authentication" -d "$Body" $workItemUrl?api-version=5.0)
 
-          echo Ticket updated: $workItemId
+          echo Ticket updated: $workItemUrl
+          echo $queryResults
 
           echo --------------------------
           echo ""
