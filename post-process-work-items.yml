@@ -28,7 +28,7 @@ steps:
         echo $workItemQueryResult
 
         for workItem in $(echo "${existingWorkItems}" | jq); do      
-          workItemUrl=$( jq -c  '.workItems' <<< "${url}" )
+          workItemUrl=$( jq -c  '.url' <<< "${workItem}" )
           Body='[
           {
             "op": "add",
