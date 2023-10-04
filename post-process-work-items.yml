@@ -27,7 +27,8 @@ steps:
         existingWorkItems=$( jq -c  '.workItems' <<< "${workItemQueryResult}" )
         echo $workItemQueryResult
 
-        for workItem in $(echo "${existingWorkItems}" | jq); do      
+        for workItem in $(echo "${existingWorkItems}" | jq); do    
+          echo $workItem
           workItemUrl=$( jq -c  '.url' <<< "${workItem}" )
           Body='[
           {
