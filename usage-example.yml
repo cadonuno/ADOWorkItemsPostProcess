@@ -14,7 +14,7 @@ steps:
   - template: post-process-work-items.yml
     parameters:
         organization: 'rpereira0294'
-        project_name: '$(system.teamProject)'
+        project_name: 'Test%20Project'
         azure_base_directory: 'https://dev.azure.com'
         work_item_id_to_link: '2206'
         user_to_assign: '522f70d6-e9f7-63b0-a1e9-9f5726a5089f'
