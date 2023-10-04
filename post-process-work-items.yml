@@ -48,9 +48,12 @@ steps:
               "descriptor":"${{ parameters.user_to_assign }}"
             }
           }]'
-          queryResults=$(curl -X PATCH -H 'Content-Type: application/json-patch+json' -u "$Authentication" -d "$Body" $workItemUrl)
+          endpointUrl=$workItemUrl?api-version=5.0
+          queryResults=$(curl -X PATCH -H 'Content-Type: application/json-patch+json' -u "$Authentication" -d "$Body" $endpointUrl)
 
           echo Ticket updated: $workItemUrl
+          echo Called API: $endpointUrl
+          echo --
           echo $queryResults
 
           echo --------------------------
