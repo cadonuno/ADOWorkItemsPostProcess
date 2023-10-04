@@ -17,5 +17,5 @@ steps:
         project_name: 'Test%20Project'
         azure_base_directory: 'https://dev.azure.com'
         work_item_id_to_link: '2206'
-        user_to_assign: '522f70d6-e9f7-63b0-a1e9-9f5726a5089f'
+        user_to_assign: 'aad.NTIyZjcwZDYtZTlmNy03M2IwLWExZTktOWY1NzI2YTUwODlm'  #user descriptor
         tag_value_to_filter_issues: 'Build_20383219'
