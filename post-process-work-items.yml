@@ -1,0 +1,58 @@
+parameters:
+  organization: ''
+  project_name: ''
+  azure_base_directory: 'https://dev.azure.com'
+  work_item_id_to_link: ''
+  user_to_assign: ''
+  tag_value_to_filter_issues: ''
+  
+steps:
+- task: CmdLine@2
+  continueOnError: true
+  name: CreateTickets
+  env:
+    API_CREDENTIALS: $(AZURE_API_CREDENTIALS)
+  inputs:
+    script: |
+      expected_blank_credentials='$'"(AZURE_API_CREDENTIALS)"
+      if [[ $API_CREDENTIALS == "$expected_blank_credentials" ]]; then 
+        echo "Missing AZURE_API_CREDENTIALS environment variable. AZURE_API_CREDENTIALS must be set to post-process ADO work items."
+        exit 2
+      else 
+        updateApiBaseUrl="${{ parameters.Azure_Base_Directory }}/${{ parameters.organization }}/${{ parameters.project_name }}/_apis/wit/workitems/"
+        getWorkItemsApiUrl="${{ parameters.Azure_Base_Directory }}/${{ parameters.organization }}/${{ parameters.project_name }}/_apis/wit/wiql?api-version=6.1"
+        Authentication="anything:$API_CREDENTIALS"
+        
+        getWorkItemQuery="{\"query\": \"Select [System.Title] From WorkItems Where [State] <> 'Closed' AND [State] <> 'Removed' AND [System.Tags] contains '$tag_value_to_filter_issues'\"}"
+        workItemQueryResult=$(curl --silent -X POST -H 'Content-Type: application/json' -u "$Authentication" -d "$getWorkItemQuery" $getWorkItemApiUrl)
+        existingWorkItems=$( jq -c  '.workItems' <<< "${workItemQueryResult}" )
+        
+        for workItem in $(echo "${existingWorkItems}" | jq -r '. | @base64'); do        
+          Body='[
+          {
+            "op": "add",
+            "path": "/relations/-",
+            "value": {
+              "rel": "System.LinkTypes.Dependency-forward",
+              "url": "'"$updateApiBaseUrl"'/${{ parameters.work_item_id_to_link }}",
+              "attributes": {
+                "comment": "Automatically linked through API"
+              }
+            }
+          },
+          {
+            "op": "add",
+            "path": "/fields/System.AssignedTo",
+            "value": {
+              "descriptor":"${{ parameters.user_to_assign }}"
+            }
+          }]'
+
+          curl --silent -X PATCH -H 'Content-Type: application/json-patch+json' -u "$Authentication" -d "$Body" $workItemUrl?api-version=5.0
+
+          echo Ticket updated: $workItemId
+
+          echo --------------------------
+          echo ""
+        done
+      fi
