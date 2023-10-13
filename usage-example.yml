@@ -3,6 +3,13 @@
 # Add steps that build, run tests, deploy, and more:
 # https://aka.ms/yaml
 
+schedules:
+- cron: "0 0 * * *"
+  displayName: Daily Midnight Build
+  branches:
+    include:
+    - master
+
 trigger:
 - main
 
@@ -10,6 +17,21 @@ pool:
   vmImage: ubuntu-latest
 
 steps:
+
+  - task: Veracode Flaw Importer@3
+    inputs:
+      ConnectionDetailsSelection: 'Service Connection'
+      veracodeAppProfile: '$(system.teamProject)'
+      sandboxName: 
+      scanType: 'Dynamic and Static Analysis'
+      importType: 'All Unmitigated Flaws Violating Policy'
+      workItemType: 'Bug'
+      area: '$(system.teamProject)'
+      overwriteAreaPathInWorkItemsOnImport: true
+      iterationPath: '$(system.teamProject)'
+      addCustomTag: 'Veracode-$(build.buildNumber)'
+      flawImportLimit: '1000'
+
   # requires AZURE_API_CREDENTIALS environment variable (secret)
   - template: post-process-work-items.yml
     parameters:
@@ -18,4 +40,4 @@ steps:
         azure_base_directory: 'https://dev.azure.com'
         work_item_id_to_link: '2206'
         user_to_assign: 'aad.NTIyZjcwZDYtZTlmNy03M2IwLWExZTktOWY1NzI2YTUwODlm'  #user descriptor
-        tag_value_to_filter_issues: 'Build_20383219'
+        tag_value_to_filter_issues: 'Veracode-$(build.buildNumber)'
