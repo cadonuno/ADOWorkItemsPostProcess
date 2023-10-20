@@ -36,7 +36,7 @@ steps:
   - template: post-process-work-items.yml
     parameters:
         organization: 'rpereira0294'
-        project_name: 'Test%20Project'
+        project_name: 'Test Project'
         azure_base_directory: 'https://dev.azure.com'
         work_item_id_to_link: '2206'
         user_to_assign: 'aad.NTIyZjcwZDYtZTlmNy03M2IwLWExZTktOWY1NzI2YTUwODlm'  #user descriptor
