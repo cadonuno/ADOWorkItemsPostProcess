@@ -13,13 +13,17 @@ steps:
     API_CREDENTIALS: $(AZURE_API_CREDENTIALS)
   inputs:
     script: |
+      substring=" "
+      replacement="%20"
+      project_name="${{ parameters.project_name }}"
+      project_name=${string//substring/replacement}
       expected_blank_credentials='$'"(AZURE_API_CREDENTIALS)"
       if [[ $API_CREDENTIALS == "$expected_blank_credentials" ]]; then 
         echo "Missing AZURE_API_CREDENTIALS environment variable. AZURE_API_CREDENTIALS must be set to post-process ADO work items."
         exit 2
       else 
-        updateApiBaseUrl="${{ parameters.Azure_Base_Directory }}/${{ parameters.organization }}/${{ parameters.project_name }}/_apis/wit/workitems/"
-        getWorkItemsApiUrl="${{ parameters.Azure_Base_Directory }}/${{ parameters.organization }}/${{ parameters.project_name }}/_apis/wit/wiql?api-version=6.1"
+        updateApiBaseUrl="${{ parameters.Azure_Base_Directory }}/${{ parameters.organization }}/$project_name/_apis/wit/workitems/"
+        getWorkItemsApiUrl="${{ parameters.Azure_Base_Directory }}/${{ parameters.organization }}/$project_name/_apis/wit/wiql?api-version=6.1"
         Authentication="anything:$API_CREDENTIALS"
         
         getWorkItemQuery="{\"query\": \"Select [System.Title] From WorkItems Where [State] <> 'Closed' AND [State] <> 'Removed' AND [System.Tags] contains '${{ parameters.tag_value_to_filter_issues }}'\"}"
