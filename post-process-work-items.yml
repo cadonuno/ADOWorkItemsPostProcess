@@ -16,7 +16,7 @@ steps:
       substring=" "
       replacement="%20"
       projectName="${{ parameters.project_name }}"
-      projectName=${string//substring/replacement}
+      projectName=${projectName//substring/replacement}
       expected_blank_credentials='$'"(AZURE_API_CREDENTIALS)"
       if [[ $API_CREDENTIALS == "$expected_blank_credentials" ]]; then 
         echo "Missing AZURE_API_CREDENTIALS environment variable. AZURE_API_CREDENTIALS must be set to post-process ADO work items."
@@ -24,7 +24,7 @@ steps:
       else 
         echo Starting import on Project: $projectName
         updateApiBaseUrl="${{ parameters.Azure_Base_Directory }}/${{ parameters.organization }}/${projectName}/_apis/wit/workitems/"
-        getWorkItemsApiUrl="${{ parameters.Azure_Base_Directory }}/${{ parameters.organization }}${projectName}e/_apis/wit/wiql?api-version=6.1"
+        getWorkItemsApiUrl="${{ parameters.Azure_Base_Directory }}/${{ parameters.organization }}/${projectName}/_apis/wit/wiql?api-version=6.1"
         Authentication="anything:$API_CREDENTIALS"
         echo updateApiBaseUrl: $updateApiBaseUrl
         echo getWorkItemsApiUrl: $getWorkItemsApiUrl
