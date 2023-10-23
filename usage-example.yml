@@ -27,7 +27,7 @@ steps:
       scanType: 'Dynamic, Static, SCA'
       importType: 'All Flaws'
       workItemType: 'Bug'
-      addDueDateBasedOnGracePeriods: false
+      addDueDateBasedOnGracePeriods: true
       area: '$(system.teamProject)'
       overwriteAreaPathInWorkItemsOnImport: true
       iterationPath: '$(system.teamProject)'
