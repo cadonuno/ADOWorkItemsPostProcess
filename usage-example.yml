@@ -25,7 +25,7 @@ steps:
       veracodeAppProfile: 'Verademo ADO'
       sandboxName: 
       scanType: 'Dynamic, Static, SCA'
-      importType: 'All Unmitigated Flaws'
+      importType: 'All Flaws'
       workItemType: 'Bug'
       addDueDateBasedOnGracePeriods: false
       area: '$(system.teamProject)'
