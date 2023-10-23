@@ -22,12 +22,12 @@ steps:
       ConnectionDetailsSelection: 'Service Connection'
       AnalysisService: 'Veracode - New'
       failBuildIfFlawImporterFails: true
-      addDueDateBasedOnGracePeriods: true
       veracodeAppProfile: 'Verademo ADO'
       sandboxName: 
       scanType: 'Dynamic, Static, SCA'
-      importType: 'All Unmitigated Flaws Violating Policy'
+      importType: 'All Unmitigated Flaws'
       workItemType: 'Bug'
+      addDueDateBasedOnGracePeriods: true
       area: '$(system.teamProject)'
       overwriteAreaPathInWorkItemsOnImport: true
       iterationPath: '$(system.teamProject)'
