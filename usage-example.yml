@@ -42,6 +42,6 @@ steps:
         organization: 'rpereira0294'
         project_name: 'Test Project'
         azure_base_directory: 'https://dev.azure.com'
-        work_item_id_to_link: '2206'
+        work_item_id_to_link: '3692'
         user_to_assign: 'aad.NTIyZjcwZDYtZTlmNy03M2IwLWExZTktOWY1NzI2YTUwODlm'  #user descriptor
         tag_value_to_filter_issues: 'VeracodeFindingsNew-$(build.buildNumber)'
