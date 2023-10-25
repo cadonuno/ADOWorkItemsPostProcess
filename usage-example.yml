@@ -17,7 +17,7 @@ pool:
   vmImage: ubuntu-latest
 
 steps:
-  - task: Veracode Flaw Importer Ricardo@3
+  - task: Veracode Flaw Importer@3
     inputs:
       ConnectionDetailsSelection: 'Service Connection'
       AnalysisService: 'Veracode - New'
