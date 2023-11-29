@@ -31,6 +31,9 @@ steps:
       overwriteAreaPathInWorkItemsOnImport: true
       iterationPath: '$(system.teamProject)'
       addCustomTag: 'VeracodeFindingsNew-$(build.buildNumber)'
+      addCweAsATag: false
+      foundInBuild: false
+      addScanNameAsATag: false
       flawImportLimit: '1000'
 
   # requires AZURE_API_CREDENTIALS environment variable (secret)
