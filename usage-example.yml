@@ -26,8 +26,8 @@ steps:
       sandboxName: 
       scanType: 'Dynamic, Static, SCA'
       importType: 'All Unmitigated Flaws of Specific Severities'
-      importVeryHigh: true
-      importHigh: true
+      importLow: true
+      importInformational: true
       workItemType: 'Bug'
       area: '$(system.teamProject)'
       overwriteAreaPathInWorkItemsOnImport: true
@@ -36,6 +36,8 @@ steps:
       addCweAsATag: false
       foundInBuild: false
       addScanNameAsATag: false
+      shouldAddScanTypeAsTag: false
+      addDueDateBasedOnGracePeriods: false
       flawImportLimit: '1000'
 
   # requires AZURE_API_CREDENTIALS environment variable (secret)
