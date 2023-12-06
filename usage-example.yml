@@ -25,7 +25,9 @@ steps:
       veracodeAppProfile: 'Verademo ADO'
       sandboxName: 
       scanType: 'Dynamic, Static, SCA'
-      importType: 'All Flaws'
+      importType: 'All Unmitigated Flaws of Specific Severities'
+      importVeryHigh: true
+      importHigh: true
       workItemType: 'Bug'
       area: '$(system.teamProject)'
       overwriteAreaPathInWorkItemsOnImport: true
