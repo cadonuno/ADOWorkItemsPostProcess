@@ -36,7 +36,6 @@ steps:
         for workItem in $(echo "${workItemQueryResult}" | jq -r '.workItems[] | @base64'); do
           workItemJson=$(echo "$workItem" | base64 --decode)
           echo Found work item to update: "$workItemJson"
-
           workItemUrl=$(jq -r '.url' <<<"${workItemJson}")
           Body='[
           {
@@ -59,7 +58,7 @@ steps:
           }'
           if [[ "${{ parameters.convert_due_date }}" == "true" ]]; then
             echo Fetching due date tag
-            duedateRequestResult=$(curl -X POST -H 'Content-Type: application/json' -u "$Authentication" "$workItemUrl")
+            duedateRequestResult=$(curl -X POST -H 'Content-Type: application/json' -u "$Authentication" $workItemUrl)
             dueDateJson=$(echo "$duedateRequestResult" | base64 --decode)
             echo Found work item:
             echo "$dueDateJson"
@@ -100,7 +99,7 @@ steps:
           endpointUrl=$workItemUrl?api-version=5.0
           echo Updating issue with body: "$Body"
 
-          queryResults=$(curl --silent -X PATCH -H 'Content-Type: application/json-patch json' -u "$Authentication" -d "$Body" "$endpointUrl")
+          queryResults=$(curl --silent -X PATCH -H 'Content-Type: application/json-patch json' -u "$Authentication" -d "$Body" $endpointUrl)
 
           echo Ticket updated: "$workItemUrl"
           echo Called API: "$endpointUrl"
