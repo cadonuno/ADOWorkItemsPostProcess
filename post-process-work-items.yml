@@ -57,14 +57,16 @@ steps:
             }
           }'
           if [[ "${{ parameters.convert_due_date }}" == "true" ]]; then
-            echo Fetching due date tag
+            echo Fetching due tags
             dueDateJson=$(curl -X GET -u "$Authentication" $workItemUrl)
             echo Found work item:
             echo "$dueDateJson"
             echo --------------------
 
-            fields=$(jq -r '.fields' <<<"${dueDateJson}")
-            tags=$(jq -r '.System.Tags' <<<"${fields}")
+            fields=$(jq -r '.fields' <<< "${dueDateJson}")
+            echo Found fields:
+            echo $fields
+            tags=$(jq -r '.System.Tags' <<< "${fields}")
 
             echo Found tags:
             echo "$tags"
