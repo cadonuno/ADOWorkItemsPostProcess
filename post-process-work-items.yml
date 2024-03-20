@@ -58,11 +58,8 @@ steps:
           }'
           if [[ "${{ parameters.convert_due_date }}" == "true" ]]; then
             echo Fetching due date tag
-            duedateRequestResult=$(curl -X GET -u "$Authentication" $workItemUrl)
+            dueDateJson=$(curl -X GET -u "$Authentication" $workItemUrl)
             echo Found work item:
-            echo $duedateRequestResult
-            dueDateJson=$(echo "$duedateRequestResult" | base64 --decode)
-            echo Decoded work item:
             echo "$dueDateJson"
             echo --------------------
 
