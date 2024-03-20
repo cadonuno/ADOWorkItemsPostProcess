@@ -31,7 +31,7 @@ steps:
 
         getWorkItemQuery="{\"query\": \"Select [System.Title] From WorkItems Where [State] <> 'Closed' AND [State] <> 'Removed' AND [System.Tags] contains '${{ parameters.tag_value_to_filter_issues }}'\"}"
         echo Running query: $getWorkItemQuery
-        workItemQueryResult=$(curl -X POST -H 'Content-Type: application/json' -u "$Authentication" -d "$getWorkItemQuery" $getWorkItemsApiUrl)
+        workItemQueryResult=$(curl --silent -X POST -H 'Content-Type: application/json' -u "$Authentication" -d "$getWorkItemQuery" $getWorkItemsApiUrl)
         echo Found work items: "$workItemQueryResult"
         for workItem in $(echo "${workItemQueryResult}" | jq -r '.workItems[] | @base64'); do
           workItemJson=$(echo "$workItem" | base64 --decode)
@@ -58,7 +58,7 @@ steps:
           }'
           if [[ "${{ parameters.convert_due_date }}" == "true" ]]; then
             echo Fetching due tags for $workItemUrl
-            dueDateJson=$(curl -X GET -u "$Authentication" $workItemUrl)
+            dueDateJson=$(curl --silent -X GET -u "$Authentication" $workItemUrl)
 
             fields=$(jq -r '.fields' <<< "${dueDateJson}")
             tags=$(jq -r '.["System.Tags"]' <<< "${fields}")
@@ -66,8 +66,6 @@ steps:
             tagArray=(${tags//;/ })
             dueDate="false"
             for tag in "${tagArray[@]}"; do
-              echo Checking tag:
-              echo "$tag"
               if [ "${tag:4:1}" == "-" ] && [ "${tag:7:1}" == "-" ] && [ "${tag:10:1}" == "T" ] && [ "${tag:13:1}" == ":" ] && [ "${tag:16:1}" == ":" ] && [ "${tag:19:1}" == "Z" ]; then
                 dueDate=$tag
                 echo Found due date tag:
@@ -90,15 +88,15 @@ steps:
           fi
           endpointUrl=$workItemUrl?api-version=5.0
           echo Updating issue with body: "$Body"
-
+          
           queryResults=$(curl --silent -X PATCH -H 'Content-Type: application/json-patch+json' -u "$Authentication" -d "$Body" $endpointUrl)
 
           echo Ticket updated: "$workItemUrl"
-          echo Called API: "$endpointUrl"
-          echo --
+          echo --------------------------
+          echo Returned value: 
           echo "$queryResults"
 
-          echo --------------------------
+          echo ----------------------------------------------------
           echo ""
         done
       fi
