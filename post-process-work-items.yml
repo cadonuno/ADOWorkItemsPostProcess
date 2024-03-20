@@ -5,6 +5,7 @@ parameters:
   work_item_id_to_link: ''
   user_to_assign: ''
   tag_value_to_filter_issues: ''
+  convert_due_date: 'false'
   
 steps:
 - task: CmdLine@2
@@ -23,6 +24,7 @@ steps:
         echo Starting import on Project: $projectName
         updateApiBaseUrl="${{ parameters.Azure_Base_Directory }}/${{ parameters.organization }}/${projectName}/_apis/wit/workitems/"
         getWorkItemsApiUrl="${{ parameters.Azure_Base_Directory }}/${{ parameters.organization }}/${projectName}/_apis/wit/wiql?api-version=6.1"
+
         Authentication="anything:$API_CREDENTIALS"
         echo updateApiBaseUrl: $updateApiBaseUrl
         echo getWorkItemsApiUrl: $getWorkItemsApiUrl
@@ -53,7 +55,48 @@ steps:
             "value": {
               "descriptor":"${{ parameters.user_to_assign }}"
             }
-          }]'
+          }'
+          if [[ "${{ parameters.convert_due_date }}" == "true" ]]; then
+            echo Fetching due date tag
+			duedateRequestResult=$(curl -X POST -H 'Content-Type: application/json' -u "$Authentication" $workItemUrl)
+			dueDateJson=$(echo "$duedateRequestResult" | base64 --decode)
+			echo Found work item:
+			echo $dueDateJson
+			echo --------------------
+						
+			fields=$( jq -r  '.fields' <<< "${dueDateJson}" )
+			tags=$( jq -r  '.System.Tags' <<< "${fields}" )
+			
+			echo Found tags:
+			echo $tags
+			tagArray=(${tags//;/ })
+			dueDate="false"
+			for tag in "${tagArray[@]}"
+			do
+				echo Checking tag:
+				echo $tag
+			    if [ ${tag:0:4} == "-" ] [ ${tag:0:7} == "-" ] [ ${tag:0:10} == "T" ] [ ${tag:0:13} == ":" ] [ ${tag:0:16} == ":" ] [ ${tag:0:19} == "Z" ]; then
+					dueDate=$tag
+					echo Found due date tag:
+					echo $dueDate
+					break
+			    fi
+			done
+			if [[ $dueDate == "false" ]]; then
+				Body="$Body]"
+		    else 
+				Body="$Body,
+			  {
+				"op": "add",
+				"path": "/fields/Microsoft.VSTS.Scheduling.DueDate",
+				"value": {
+				  "descriptor":"'"$dueDate"'"
+				}
+			  }]"
+		    fi
+          else 
+			Body="$Body]"
+          fi
           endpointUrl=$workItemUrl?api-version=5.0
           echo Updating issue with body: $Body
           
