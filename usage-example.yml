@@ -17,28 +17,23 @@ pool:
   vmImage: ubuntu-latest
 
 steps:
-  - task: Veracode Flaw Importer Ricardo@3
+  - task: Veracode Flaw Importer@3
     inputs:
       ConnectionDetailsSelection: 'Service Connection'
-      AnalysisService: 'Veracode - New'
+      AnalysisService: 'Veracode Analysis Center'
       failBuildIfFlawImporterFails: true
       veracodeAppProfile: 'Verademo ADO'
       sandboxName: 
       scanType: 'Dynamic, Static, SCA'
-      importType: 'All Unmitigated Flaws of Specific Severities'
-      importLow: true
-      importInformational: true
+      importType: 'All Unmitigated Flaws Violating Policy'
       workItemType: 'Bug'
       area: '$(system.teamProject)'
       overwriteAreaPathInWorkItemsOnImport: true
       iterationPath: '$(system.teamProject)'
+      overwriteIterationPath: true
       addCustomTag: 'VeracodeFindingsNew-$(build.buildNumber)'
-      addCweAsATag: false
-      foundInBuild: false
-      addScanNameAsATag: false
-      shouldAddScanTypeAsTag: false
-      addDueDateBasedOnGracePeriods: false
       flawImportLimit: '1000'
+      customFields: 'Some Custom Field:Some Value'
 
   # requires AZURE_API_CREDENTIALS environment variable (secret)
   - template: post-process-work-items.yml
@@ -46,6 +41,7 @@ steps:
         organization: 'rpereira0294'
         project_name: 'Test Project'
         azure_base_directory: 'https://dev.azure.com'
-        work_item_id_to_link: '3692'
+        work_item_id_to_link: '4925'
         user_to_assign: 'aad.NTIyZjcwZDYtZTlmNy03M2IwLWExZTktOWY1NzI2YTUwODlm'  #user descriptor
         tag_value_to_filter_issues: 'VeracodeFindingsNew-$(build.buildNumber)'
+        convert_due_date: 'true'
