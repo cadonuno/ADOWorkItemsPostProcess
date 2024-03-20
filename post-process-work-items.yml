@@ -14,102 +14,99 @@ steps:
     API_CREDENTIALS: $(AZURE_API_CREDENTIALS)
   inputs:
     script: |
-      projectName="${{ parameters.project_name }}"
-      projectName=${projectName// / }
-      expected_blank_credentials='$'"(AZURE_API_CREDENTIALS)"
-      if [[ $API_CREDENTIALS == "$expected_blank_credentials" ]]; then
-          echo "Missing AZURE_API_CREDENTIALS environment variable. AZURE_API_CREDENTIALS must be set to post-process ADO work items."
-        exit 2
-      else
-        echo Starting import on Project: "$projectName"
-        updateApiBaseUrl="${{ parameters.Azure_Base_Directory }}/${{ parameters.organization }}/${projectName}/_apis/wit/workitems/"
-        getWorkItemsApiUrl="${{ parameters.Azure_Base_Directory }}/${{ parameters.organization }}/${projectName}/_apis/wit/wiql?api-version=6.1"
-
-        Authentication="anything:$API_CREDENTIALS"
-        echo updateApiBaseUrl: "$updateApiBaseUrl"
-        echo getWorkItemsApiUrl: "$getWorkItemsApiUrl"
-
-        getWorkItemQuery="{\"query\": \"Select [System.Title] From WorkItems Where [State] <> 'Closed' AND [State] <> 'Removed' AND [System.Tags] contains '${{ parameters.tag_value_to_filter_issues }}'\"}"
-        workItemQueryResult=$(curl --silent -X POST -H 'Content-Type: application/json' -u "$Authentication" -d "$getWorkItemQuery" $getWorkItemsApiUrl)
-        echo Found work items: "$workItemQueryResult"
-            for workItem in $(echo "${workItemQueryResult}" | jq -r '.workItems[] | @base64'); do
-          workItemJson=$(echo "$workItem" | base64 --decode)
-          echo Found work item to update: "$workItemJson"
-
-          workItemUrl=$(jq -r '.url' <<<"${workItemJson}")
-          Body='[
-        {
-          "op": "add",
-          "path": "/relations/-",
-          "value": {
-            "rel": "System.LinkTypes.Dependency-forward",
-            "url": "'"$updateApiBaseUrl"'/${{ parameters.work_item_id_to_link }}",
-            "attributes": {
-              "comment": "Automatically linked through API"
-            }
-          }
-        },
-        {
-          "op": "add",
-          "path": "/fields/System.AssignedTo",
-          "value": {
-            "descriptor":"${{ parameters.user_to_assign }}"
-          }
-        }'
-        if [[ "${{ parameters.convert_due_date }}" == "true" ]]; then
-          echo Fetching due date tag
-          duedateRequestResult=$(curl -X POST -H 'Content-Type: application/json' -u "$Authentication" "$workItemUrl")
-          dueDateJson=$(echo "$duedateRequestResult" | base64 --decode)
-          echo Found work item:
-          echo "$dueDateJson"
-          echo --------------------
-
-          fields=$(jq -r '.fields' <<<"${dueDateJson}")
-          tags=$(jq -r '.System.Tags' <<<"${fields}")
-
-          echo Found tags:
-          echo "$tags"
-          tagArray=(${tags//;/ })
-          dueDate="false"
-          for tag in "${tagArray[@]}"; do
-            echo Checking tag:
-            echo "$tag"
-            if [ "${tag:0:4}" == "-" ] && [ "${tag:0:7}" == "-" ] && [ "${tag:0:10}" == "T" ] && [ "${tag:0:13}" == ":" ] && [ "${tag:0:16}" == ":" ] && [ "${tag:0:19}" == "Z" ]; then
-              dueDate=$tag
-              echo Found due date tag:
-              echo "$dueDate"
-              break
-            fi
-          done
-          if [[ $dueDate == "false" ]]; then
-            Body="$Body]"
-          else
-            Body="$Body,"'
-            {
-              "op": "add",
-              "path": "/fields/Microsoft.VSTS.Scheduling.DueDate",
-              "value": {
-                "descriptor":"'"$dueDate"'"
-              }
-            }]'
-          fi
+        projectName="${{ parameters.project_name }}"
+        projectName=${projectName// / }
+        expected_blank_credentials='$'"(AZURE_API_CREDENTIALS)"
+        if [[ $API_CREDENTIALS == "$expected_blank_credentials" ]]; then
+            echo "Missing AZURE_API_CREDENTIALS environment variable. AZURE_API_CREDENTIALS must be set to post-process ADO work items."
+          exit 2
         else
-          Body="$Body]"
-        fi
-        endpointUrl=$workItemUrl?api-version=5.0
-        echo Updating issue with body: "$Body"
-
-        queryResults=$(curl --silent -X PATCH -H 'Content-Type: application/json-patch json' -u "$Authentication" -d "$Body" "$endpointUrl")
-
-        echo Ticket updated: "$workItemUrl"
-        echo Called API: "$endpointUrl"
-        echo --
-        echo "$queryResults"
-
-        echo --------------------------
-        echo ""
-      done
-    fi
-
-
-
+          echo Starting import on Project: "$projectName"
+          updateApiBaseUrl="${{ parameters.Azure_Base_Directory }}/${{ parameters.organization }}/${projectName}/_apis/wit/workitems/"
+          getWorkItemsApiUrl="${{ parameters.Azure_Base_Directory }}/${{ parameters.organization }}/${projectName}/_apis/wit/wiql?api-version=6.1"
+  
+          Authentication="anything:$API_CREDENTIALS"
+          echo updateApiBaseUrl: "$updateApiBaseUrl"
+          echo getWorkItemsApiUrl: "$getWorkItemsApiUrl"
+  
+          getWorkItemQuery="{\"query\": \"Select [System.Title] From WorkItems Where [State] <> 'Closed' AND [State] <> 'Removed' AND [System.Tags] contains '${{ parameters.tag_value_to_filter_issues }}'\"}"
+          workItemQueryResult=$(curl --silent -X POST -H 'Content-Type: application/json' -u "$Authentication" -d "$getWorkItemQuery" $getWorkItemsApiUrl)
+          echo Found work items: "$workItemQueryResult"
+              for workItem in $(echo "${workItemQueryResult}" | jq -r '.workItems[] | @base64'); do
+            workItemJson=$(echo "$workItem" | base64 --decode)
+            echo Found work item to update: "$workItemJson"
+  
+            workItemUrl=$(jq -r '.url' <<<"${workItemJson}")
+            Body='[
+          {
+            "op": "add",
+            "path": "/relations/-",
+            "value": {
+              "rel": "System.LinkTypes.Dependency-forward",
+              "url": "'"$updateApiBaseUrl"'/${{ parameters.work_item_id_to_link }}",
+              "attributes": {
+                "comment": "Automatically linked through API"
+              }
+            }
+          },
+          {
+            "op": "add",
+            "path": "/fields/System.AssignedTo",
+            "value": {
+              "descriptor":"${{ parameters.user_to_assign }}"
+            }
+          }'
+          if [[ "${{ parameters.convert_due_date }}" == "true" ]]; then
+            echo Fetching due date tag
+            duedateRequestResult=$(curl -X POST -H 'Content-Type: application/json' -u "$Authentication" "$workItemUrl")
+            dueDateJson=$(echo "$duedateRequestResult" | base64 --decode)
+            echo Found work item:
+            echo "$dueDateJson"
+            echo --------------------
+  
+            fields=$(jq -r '.fields' <<<"${dueDateJson}")
+            tags=$(jq -r '.System.Tags' <<<"${fields}")
+  
+            echo Found tags:
+            echo "$tags"
+            tagArray=(${tags//;/ })
+            dueDate="false"
+            for tag in "${tagArray[@]}"; do
+              echo Checking tag:
+              echo "$tag"
+              if [ "${tag:0:4}" == "-" ] && [ "${tag:0:7}" == "-" ] && [ "${tag:0:10}" == "T" ] && [ "${tag:0:13}" == ":" ] && [ "${tag:0:16}" == ":" ] && [ "${tag:0:19}" == "Z" ]; then
+                dueDate=$tag
+                echo Found due date tag:
+                echo "$dueDate"
+                break
+              fi
+            done
+            if [[ $dueDate == "false" ]]; then
+              Body="$Body]"
+            else
+              Body="$Body,"'
+              {
+                "op": "add",
+                "path": "/fields/Microsoft.VSTS.Scheduling.DueDate",
+                "value": {
+                  "descriptor":"'"$dueDate"'"
+                }
+              }]'
+            fi
+          else
+            Body="$Body]"
+          fi
+          endpointUrl=$workItemUrl?api-version=5.0
+          echo Updating issue with body: "$Body"
+  
+          queryResults=$(curl --silent -X PATCH -H 'Content-Type: application/json-patch json' -u "$Authentication" -d "$Body" "$endpointUrl")
+  
+          echo Ticket updated: "$workItemUrl"
+          echo Called API: "$endpointUrl"
+          echo --
+          echo "$queryResults"
+  
+          echo --------------------------
+          echo ""
+        done
+      fi
