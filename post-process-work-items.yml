@@ -56,46 +56,46 @@ steps:
               "descriptor":"${{ parameters.user_to_assign }}"
             }
           }'
-          if [[ "${{ parameters.convert_due_date }}" == "true" ]]; then
-            echo Fetching due date tag
-			duedateRequestResult=$(curl -X POST -H 'Content-Type: application/json' -u "$Authentication" $workItemUrl)
-			dueDateJson=$(echo "$duedateRequestResult" | base64 --decode)
-			echo Found work item:
-			echo $dueDateJson
-			echo --------------------
-						
-			fields=$( jq -r  '.fields' <<< "${dueDateJson}" )
-			tags=$( jq -r  '.System.Tags' <<< "${fields}" )
-			
-			echo Found tags:
-			echo $tags
-			tagArray=(${tags//;/ })
-			dueDate="false"
-			for tag in "${tagArray[@]}"
-			do
-				echo Checking tag:
-				echo $tag
-			    if [ ${tag:0:4} == "-" ] [ ${tag:0:7} == "-" ] [ ${tag:0:10} == "T" ] [ ${tag:0:13} == ":" ] [ ${tag:0:16} == ":" ] [ ${tag:0:19} == "Z" ]; then
-					dueDate=$tag
-					echo Found due date tag:
-					echo $dueDate
-					break
-			    fi
-			done
-			if [[ $dueDate == "false" ]]; then
-				Body="$Body]"
-		    else 
-				Body="$Body,
-			  {
-				"op": "add",
-				"path": "/fields/Microsoft.VSTS.Scheduling.DueDate",
-				"value": {
-				  "descriptor":"'"$dueDate"'"
-				}
-			  }]"
-		    fi
+	if [[ "${{ parameters.convert_due_date }}" == "true" ]]; then
+          echo Fetching due date tag
+          duedateRequestResult=$(curl -X POST -H 'Content-Type: application/json' -u "$Authentication" $workItemUrl)
+          dueDateJson=$(echo "$duedateRequestResult" | base64 --decode)
+          echo Found work item:
+          echo $dueDateJson
+          echo --------------------
+				
+          fields=$( jq -r  '.fields' <<< "${dueDateJson}" )
+          tags=$( jq -r  '.System.Tags' <<< "${fields}" )
+	
+          echo Found tags:
+          echo $tags
+          tagArray=(${tags//;/ })
+          dueDate="false"
+          for tag in "${tagArray[@]}"
+          do
+            echo Checking tag:
+            echo $tag
+            if [ ${tag:0:4} == "-" ] [ ${tag:0:7} == "-" ] [ ${tag:0:10} == "T" ] [ ${tag:0:13} == ":" ] [ ${tag:0:16} == ":" ] [ ${tag:0:19} == "Z" ]; then
+              dueDate=$tag
+              echo Found due date tag:
+              echo $dueDate
+              break
+            fi
+          done
+          if [[ $dueDate == "false" ]]; then
+            Body="$Body]"
           else 
-			Body="$Body]"
+	    Body="$Body,
+  	    {
+	      "op": "add",
+	      "path": "/fields/Microsoft.VSTS.Scheduling.DueDate",
+	      "value": {
+	        "descriptor":"'"$dueDate"'"
+	      }
+	    }]"
+          fi
+          else 
+	    Body="$Body]"
           fi
           endpointUrl=$workItemUrl?api-version=5.0
           echo Updating issue with body: $Body
