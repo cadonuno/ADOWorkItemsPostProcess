@@ -29,7 +29,7 @@ steps:
 	    echo updateApiBaseUrl: "$updateApiBaseUrl"
 	    echo getWorkItemsApiUrl: "$getWorkItemsApiUrl"
 
-	    getWorkItemQuery="{"query": "Select [System.Title] From WorkItems Where [State] AND [State] AND [System.Tags] contains '${{ parameters.tag_value_to_filter_issues }}'"}" <>'Closed' <>'Removed'
+	    getWorkItemQuery="{\"query\": \"Select [System.Title] From WorkItems Where [State] <> 'Closed' AND [State] <> 'Removed' AND [System.Tags] contains '${{ parameters.tag_value_to_filter_issues }}'\"}"
 	    workItemQueryResult=$(curl --silent -X POST -H 'Content-Type: application/json' -u "$Authentication" -d "$getWorkItemQuery" "$getWorkItemsApiUrl")
 	    echo Found work items: "$workItemQueryResult"
 	    for workItem in $(echo "${workItemQueryResult}" | jq -r '.workItems[] | @base64'); do
@@ -110,3 +110,4 @@ steps:
 		echo ""
 	  done
 	fi
+
