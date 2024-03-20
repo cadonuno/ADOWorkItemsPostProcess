@@ -59,8 +59,10 @@ steps:
           if [[ "${{ parameters.convert_due_date }}" == "true" ]]; then
             echo Fetching due date tag
             duedateRequestResult=$(curl -X GET -u "$Authentication" $workItemUrl)
-            dueDateJson=$(echo "$duedateRequestResult" | base64 --decode)
             echo Found work item:
+            echo $duedateRequestResult
+            dueDateJson=$(echo "$duedateRequestResult" | base64 --decode)
+            echo Decoded work item:
             echo "$dueDateJson"
             echo --------------------
 
@@ -99,7 +101,7 @@ steps:
           endpointUrl=$workItemUrl?api-version=5.0
           echo Updating issue with body: "$Body"
 
-          queryResults=$(curl --silent -X PATCH -H 'Content-Type: application/json-patch json' -u "$Authentication" -d "$Body" $endpointUrl)
+          queryResults=$(curl --silent -X PATCH -H 'Content-Type: application/json-patch+json' -u "$Authentication" -d "$Body" $endpointUrl)
 
           echo Ticket updated: "$workItemUrl"
           echo Called API: "$endpointUrl"
