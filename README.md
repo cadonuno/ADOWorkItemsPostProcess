@@ -19,6 +19,7 @@ After running a regular flaw importer, call this:
           work_item_id_to_link: '{{WORK_ITEM_ID}}'
           user_to_assign: '{{USER_DESCRIPTOR}}'  #user descriptor
           tag_value_to_filter_issues: '{{TAG_TO_FILTER}}'
+          convert_due_date: '{{true/false}}
 
 # Parameter descriptions:
 - organization and project_name: both are part of the project URL on Azure
@@ -34,3 +35,5 @@ After running a regular flaw importer, call this:
     - The descriptor will be under fields->System.AssignedTo->descriptor
 - tag_value_to_filter_issues: a unique tag that will be present in all the tickets you want to update.
   - If selecting the 'Add Scan Name as a Tag' in the Flaw Importer task, you would have the scan name (version) here.
+- convert_due_date: attempt to add the due date tag as the due date field.
+  - Requires addDueDateTag: true in the flaw importer and the Microsoft.VSTS.Scheduling.DueDate field enabled on Azure.
