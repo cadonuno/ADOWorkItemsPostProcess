@@ -5,6 +5,7 @@ parameters:
   work_item_id_to_link: ''
   user_to_assign: ''
   tag_value_to_filter_issues: ''
+  convert_due_date: 'false'
   
 steps:
 - task: CmdLine@2
@@ -14,27 +15,28 @@ steps:
   inputs:
     script: |
       projectName="${{ parameters.project_name }}"
-      projectName=${projectName// /%20}
+      projectName=${projectName// / }
       expected_blank_credentials='$'"(AZURE_API_CREDENTIALS)"
-      if [[ $API_CREDENTIALS == "$expected_blank_credentials" ]]; then 
-        echo "Missing AZURE_API_CREDENTIALS environment variable. AZURE_API_CREDENTIALS must be set to post-process ADO work items."
+      if [[ $API_CREDENTIALS == "$expected_blank_credentials" ]]; then
+          echo "Missing AZURE_API_CREDENTIALS environment variable. AZURE_API_CREDENTIALS must be set to post-process ADO work items."
         exit 2
-      else 
-        echo Starting import on Project: $projectName
+      else
+        echo Starting import on Project: "$projectName"
         updateApiBaseUrl="${{ parameters.Azure_Base_Directory }}/${{ parameters.organization }}/${projectName}/_apis/wit/workitems/"
         getWorkItemsApiUrl="${{ parameters.Azure_Base_Directory }}/${{ parameters.organization }}/${projectName}/_apis/wit/wiql?api-version=6.1"
+
         Authentication="anything:$API_CREDENTIALS"
-        echo updateApiBaseUrl: $updateApiBaseUrl
-        echo getWorkItemsApiUrl: $getWorkItemsApiUrl
-        
+        echo updateApiBaseUrl: "$updateApiBaseUrl"
+        echo getWorkItemsApiUrl: "$getWorkItemsApiUrl"
+
         getWorkItemQuery="{\"query\": \"Select [System.Title] From WorkItems Where [State] <> 'Closed' AND [State] <> 'Removed' AND [System.Tags] contains '${{ parameters.tag_value_to_filter_issues }}'\"}"
+        echo Running query: $getWorkItemQuery
         workItemQueryResult=$(curl --silent -X POST -H 'Content-Type: application/json' -u "$Authentication" -d "$getWorkItemQuery" $getWorkItemsApiUrl)
-        echo Found work items: $workItemQueryResult
+        echo Found work items: "$workItemQueryResult"
         for workItem in $(echo "${workItemQueryResult}" | jq -r '.workItems[] | @base64'); do
           workItemJson=$(echo "$workItem" | base64 --decode)
-          echo Found work item to update: $workItemJson
-          
-          workItemUrl=$( jq -r  '.url' <<< "${workItemJson}" )
+          echo Found work item to update: "$workItemJson"
+          workItemUrl=$(jq -r '.url' <<<"${workItemJson}")
           Body='[
           {
             "op": "add",
@@ -53,18 +55,45 @@ steps:
             "value": {
               "descriptor":"${{ parameters.user_to_assign }}"
             }
-          }]'
+          }'
+          if [[ "${{ parameters.convert_due_date }}" == "true" ]]; then
+            echo Fetching due tags for $workItemUrl
+            dueDateJson=$(curl --silent -X GET -u "$Authentication" $workItemUrl)
+
+            fields=$(jq -r '.fields' <<< "${dueDateJson}")
+            tags=$(jq -r '.["System.Tags"]' <<< "${fields}")
+            tagArray=(${tags//;/ })
+            dueDate="false"
+            for tag in "${tagArray[@]}"; do
+              if [ "${tag:4:1}" == "-" ] && [ "${tag:7:1}" == "-" ] && [ "${tag:10:1}" == "T" ] && [ "${tag:13:1}" == ":" ] && [ "${tag:16:1}" == ":" ] && [ "${tag:19:1}" == "Z" ]; then
+                dueDate=$tag
+                break
+              fi
+            done
+            if [[ $dueDate == "false" ]]; then
+              Body="$Body]"
+            else
+              Body="$Body,"'
+              {
+                "op": "add",
+                "path": "/fields/Microsoft.VSTS.Scheduling.DueDate",
+                "value": "'"$dueDate"'"
+              }]'
+            fi
+          else
+            Body="$Body]"
+          fi
           endpointUrl=$workItemUrl?api-version=5.0
-          echo Updating issue with body: $Body
+          echo Updating issue with body: "$Body"
           
           queryResults=$(curl --silent -X PATCH -H 'Content-Type: application/json-patch+json' -u "$Authentication" -d "$Body" $endpointUrl)
 
-          echo Ticket updated: $workItemUrl
-          echo Called API: $endpointUrl
-          echo --
-          echo $queryResults
-
+          echo Ticket updated: "$workItemUrl"
           echo --------------------------
+          echo Returned value: 
+          echo "$queryResults"
+
+          echo ----------------------------------------------------
           echo ""
         done
       fi
